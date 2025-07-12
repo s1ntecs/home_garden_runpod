@@ -30,7 +30,6 @@ MAX_SEED: int = np.iinfo(np.int32).max
 DEVICE: str = "cuda" if torch.cuda.is_available() else "cpu"
 DTYPE: torch.dtype = torch.float16 if DEVICE == "cuda" else torch.float32
 MAX_STEPS: int = 250
-
 LORA_DIR = "./loras"
 LORA_LIST = [
     "lora_garden_architecture_Exterior_SDlife_Chiasedamme_V1.0.safetensors",
@@ -77,7 +76,9 @@ controlnet = [
         "BertChristiaens/controlnet-seg-room", torch_dtype=DTYPE
     ),
     ControlNetModel.from_pretrained(
-        "lllyasviel/sd-controlnet-mlsd", torch_dtype=DTYPE
+        # "lllyasviel/sd-controlnet-mlsd", torch_dtype=DTYPE
+        "lllyasviel/sd-controlnet-canny",  torch_dtype=torch.float16
+
     ),
 ]
 

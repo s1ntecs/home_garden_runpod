@@ -62,7 +62,8 @@ def get_pipeline():
             "BertChristiaens/controlnet-seg-room", torch_dtype=torch.float16
         ),
         ControlNetModel.from_pretrained(
-            "lllyasviel/sd-controlnet-mlsd", torch_dtype=torch.float16
+            # "lllyasviel/sd-controlnet-mlsd", torch_dtype=torch.float16
+            "lllyasviel/sd-controlnet-canny",  torch_dtype=torch.float16
         ),
     ]
     pipe = StableDiffusionControlNetInpaintPipeline.from_single_file(
