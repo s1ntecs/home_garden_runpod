@@ -344,7 +344,7 @@ def handler(job: Dict[str, Any]) -> Dict[str, Any]:
 
         hed_img = hed_processor(input_image)
         hed_img = hed_img.resize(image.size)
-        control_images = [hed_img, mlsd_img]
+        control_images = [segmentation_cond_image, mlsd_img]
         # ------------------- generation -------------------- #
         images = PIPELINE(
             prompt=prompt,
