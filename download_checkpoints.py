@@ -11,7 +11,7 @@ from diffusers import StableDiffusionImg2ImgPipeline
 
 
 from diffusers import ControlNetModel, UniPCMultistepScheduler
-from controlnet_aux import MLSDdetector
+from controlnet_aux import MLSDdetector, HEDdetector
 from transformers import AutoImageProcessor, SegformerForSemanticSegmentation
 
 from huggingface_hub import hf_hub_download
@@ -32,12 +32,12 @@ LORA_NAMES = [
 # ------------------------- загрузка весов -------------------------
 def fetch_checkpoints() -> None:
     """Скачиваем SD-чекпойнт, LoRA-файлы и все внешние зависимости."""
-    hf_hub_download(
-        repo_id="sintecs/interior",
-        filename="ruyiGardenLandscapeDesign_v10.safetensors",
-        local_dir="checkpoints",
-        local_dir_use_symlinks=False,
-    )
+    # hf_hub_download(
+    #     repo_id="sintecs/interior",
+    #     filename="ruyiGardenLandscapeDesign_v10.safetensors",
+    #     local_dir="checkpoints",
+    #     local_dir_use_symlinks=False,
+    # )
     for fname in LORA_NAMES:
         hf_hub_download(
             repo_id="sintecs/interior",
@@ -62,13 +62,13 @@ def get_pipeline():
             "BertChristiaens/controlnet-seg-room", torch_dtype=torch.float16
         ),
         ControlNetModel.from_pretrained(
-            # "lllyasviel/sd-controlnet-mlsd", torch_dtype=torch.float16
-            "lllyasviel/sd-controlnet-canny",  torch_dtype=torch.float16
+            "lllyasviel/sd-controlnet-mlsd", torch_dtype=torch.float16
+            # "lllyasviel/sd-controlnet-canny",  torch_dtype=torch.float16
         ),
     ]
-    pipe = StableDiffusionControlNetInpaintPipeline.from_single_file(
-        # "SG161222/Realistic_Vision_V3.0_VAE",
-        "checkpoints/ruyiGardenLandscapeDesign_v10.safetensors",
+    pipe = StableDiffusionControlNetInpaintPipeline.from_pretrained(
+        "SG161222/Realistic_Vision_V3.0_VAE",
+        # "checkpoints/ruyiGardenLandscapeDesign_v10.safetensors",
         controlnet=controlnet,
         safety_checker=None,
         torch_dtype=torch.float16,
@@ -90,7 +90,7 @@ def get_pipeline():
         "nvidia/segformer-b5-finetuned-ade-640-640"
     )
     MLSDdetector.from_pretrained("lllyasviel/Annotators")
-
+    HEDdetector.from_pretrained("lllyasviel/Annotators")
     return pipe
 
 

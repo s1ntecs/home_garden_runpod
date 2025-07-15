@@ -13,7 +13,7 @@ from diffusers import (StableDiffusionImg2ImgPipeline,
 from diffusers.pipelines.controlnet import \
     StableDiffusionControlNetInpaintPipeline
 from diffusers import ControlNetModel, UniPCMultistepScheduler
-from controlnet_aux import MLSDdetector
+from controlnet_aux import MLSDdetector, HEDdetector
 from transformers import AutoImageProcessor, SegformerForSemanticSegmentation
 
 from colors import ade_palette
@@ -82,16 +82,15 @@ controlnet = [
     ),
 ]
 
-PIPELINE = StableDiffusionControlNetInpaintPipeline.from_single_file(
-    # "SG161222/Realistic_Vision_V3.0_VAE",
+PIPELINE = StableDiffusionControlNetInpaintPipeline.from_pretrained(
+    "SG161222/Realistic_Vision_V3.0_VAE",
     # "hafsa000/interior-design",
-    "checkpoints/ruyiGardenLandscapeDesign_v10.safetensors",
+    # "checkpoints/ruyiGardenLandscapeDesign_v10.safetensors",
     controlnet=controlnet,
     safety_checker=None,
     torch_dtype=DTYPE,
     requires_safety_checker=False,
 )
-
 
 PIPELINE.scheduler = UniPCMultistepScheduler.from_config(
     PIPELINE.scheduler.config
@@ -117,7 +116,7 @@ image_segmentor = SegformerForSemanticSegmentation.from_pretrained(
     "nvidia/segformer-b5-finetuned-ade-640-640"
 )
 mlsd_processor = MLSDdetector.from_pretrained("lllyasviel/Annotators")
-
+hed_processor = HEDdetector.from_pretrained("lllyasviel/Annotators")
 
 CURRENT_LORA: str = "None"
 
@@ -342,6 +341,10 @@ def handler(job: Dict[str, Any]) -> Dict[str, Any]:
         # preprocess for mlsd controlnet
         mlsd_img = mlsd_processor(input_image)
         mlsd_img = mlsd_img.resize(image.size)
+
+        hed_img = hed_processor(input_image)
+        hed_img = hed_img.resize(image.size)
+        control_images = [hed_img, mlsd_img]
         # ------------------- generation -------------------- #
         images = PIPELINE(
             prompt=prompt,
@@ -352,7 +355,7 @@ def handler(job: Dict[str, Any]) -> Dict[str, Any]:
             generator=generator,
             image=image,
             mask_image=mask_image,
-            control_image=[segmentation_cond_image, mlsd_img],
+            control_image=control_images,
             controlnet_conditioning_scale=[segment_conditioning_scale,
                                            mlsd_conditioning_scale],
             control_guidance_start=[segment_guidance_start,
